@@ -1,10 +1,10 @@
 # identifybin
 
-Example: 
+Example:
 
-```go 
-
-url := "https://yoururltoafilehere" byteCount := int64(256) //number of bytes to download
+```go
+url := "https://yoururltoafilehere"
+byteCount := int64(256) //number of bytes to download
 bytes, err := idbin.DownloadFirstNBytes(url, byteCount)
 if err != nil {
     fmt.Println("Error:", err)
