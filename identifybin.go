@@ -26,20 +26,20 @@ func DetectOSAndArch(input interface{}) (string, string, string, error) {
 	case string:
 		b, err = os.ReadFile(v)
 		if err != nil {
-			return "", "", err
+			return "", "", "", err
 		}
 	case []byte:
 		b = v
 	default:
-		return "", "", errors.New("unsupported input type")
+		return "", "", "", errors.New("unsupported input type")
 	}
 
 	return detectOSAndArchFromBytes(b)
 }
 
-func detectOSAndArchFromBytes(b []byte) (string, string, error) {
-	if len(b) < 64 {
-		return "", "", errors.New("binary too small")
+func detectOSAndArchFromBytes(b []byte) (string, string, string, error) {
+	if len(b) < 256 {
+		return "", "", "", errors.New("binary too small")
 	}
 
 	switch {
@@ -50,13 +50,14 @@ func detectOSAndArchFromBytes(b []byte) (string, string, error) {
 	case bytes.HasPrefix(b, []byte(peMagic)):
 		return parsePE(b)
 	default:
-		return "", "", errors.New("unknown binary format")
+		return "", "", "", errors.New("unknown binary format")
 	}
 }
 
-func parseELF(b []byte) (string, string, error) {
+func parseELF(b []byte) (string, string, string, error) {
 	operatingSystem := "linux"
 	var arch string
+	var endianess string
 	machine := b[18]
 
 	switch machine {
@@ -69,13 +70,22 @@ func parseELF(b []byte) (string, string, error) {
 	case 0x28:
 		arch = "arm"
 	default:
-		return "", "", errors.New("unsupported ELF architecture")
+		return "", "", "", errors.New("unsupported ELF architecture")
 	}
 
-	return operatingSystem, arch, nil
+	switch b[4] {
+	case 1:
+		endianess = "little-endien"
+	case 2:
+		endianess = "big-endien"
+	default:
+		return "", "", "", errors.New("unsupported ELF endianess")
+	}
+
+	return operatingSystem, arch, endianess, nil
 }
 
-func parseMachO(b []byte) (string, string, error) {
+func parseMachO(b []byte) (string, string, string, error) {
 	operatingSystem := "darwin"
 	var arch string
 	var magic uint32
@@ -115,13 +125,15 @@ func parseMachO(b []byte) (string, string, error) {
 	case 0x0100000C, 0x0100000D, 0x0:
 		arch = "arm64"
 	default:
-		return "", "", fmt.Errorf("unsupported Mach-O architecture: 0x%x", cputype)
+		return "", "", "", fmt.Errorf("unsupported Mach-O architecture: 0x%x", cputype)
 	}
 
-	return operatingSystem, arch, nil
+	endianess := "litle-endien"
+
+	return operatingSystem, arch, endianess, nil
 }
 
-func parsePE(b []byte) (string, string, error) {
+func parsePE(b []byte) (string, string, string, error) {
 	operatingSystem := "windows"
 	var arch string
 
@@ -137,12 +149,15 @@ func parsePE(b []byte) (string, string, error) {
 	case 0xAA64:
 		arch = "arm64"
 	default:
-		return "", "", errors.New("unsupported PE architecture")
+		return "", "", "", errors.New("unsupported PE architecture")
 	}
 
-	return operatingSystem, arch, nil
+	endianess := "little-endien"
+
+	return operatingSystem, arch, endianess, nil
 }
 
+// DownloadFirstNBytes downloads the first N bytes of a file from a URL.
 func DownloadFirstNBytes(url string, byteCount int64) ([]byte, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
@@ -165,7 +180,7 @@ func DownloadFirstNBytes(url string, byteCount int64) ([]byte, error) {
 		}
 		return body, nil
 	} else if resp.StatusCode == http.StatusOK {
-		fmt.Println("Server doesn't support partial content requests, using fallback method")
+		// fmt.Println("Server doesn't support partial content requests, using fallback method")
 		buf := make([]byte, byteCount)
 		_, err = io.ReadFull(resp.Body, buf)
 		if err != nil && err != io.ErrUnexpectedEOF {
