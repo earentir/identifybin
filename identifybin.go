@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	ELFMagic    = "\x7FELF"
-	MachOMagic  = "\xFE\xED\xFA"
-	PEMagic     = "\x4D\x5A"
-	MachO64Mask = "\xCF\xFA\xED\xFE"
+	elfMagic    = "\x7FELF"
+	machOMagic  = "\xFE\xED\xFA"
+	peMagic     = "\x4D\x5A"
+	machO64Mask = "\xCF\xFA\xED\xFE"
 )
 
 func DetectOSAndArch(input interface{}) (string, string, error) {
@@ -42,11 +42,11 @@ func detectOSAndArchFromBytes(b []byte) (string, string, error) {
 	}
 
 	switch {
-	case bytes.HasPrefix(b, []byte(ELFMagic)):
+	case bytes.HasPrefix(b, []byte(elfMagic)):
 		return parseELF(b)
 	case bytes.HasPrefix(b, []byte{0xFE, 0xED, 0xFA, 0xCE}) || bytes.HasPrefix(b, []byte{0xFE, 0xED, 0xFA, 0xCF}) || bytes.HasPrefix(b, []byte{0xCE, 0xFA, 0xED, 0xFE}) || bytes.HasPrefix(b, []byte{0xCF, 0xFA, 0xED, 0xFE}):
 		return parseMachO(b)
-	case bytes.HasPrefix(b, []byte(PEMagic)):
+	case bytes.HasPrefix(b, []byte(peMagic)):
 		return parsePE(b)
 	default:
 		return "", "", errors.New("unknown binary format")
