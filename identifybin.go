@@ -17,7 +17,8 @@ const (
 	machO64Mask = "\xCF\xFA\xED\xFE"
 )
 
-func DetectOSAndArch(input interface{}) (string, string, error) {
+// DetectOSAndArch downloads the first n bytes of a file
+func DetectOSAndArch(input interface{}) (string, string, string, error) {
 	var b []byte
 	var err error
 
