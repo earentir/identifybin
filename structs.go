@@ -9,7 +9,7 @@ const (
 
 // BinaryType is the type of binary
 type BinaryType struct {
-	operatingSystem string
-	arch            string
-	endianess       string
+	OperatingSystem string
+	Arch            string
+	Endianess       string
 }

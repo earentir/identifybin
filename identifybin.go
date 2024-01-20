@@ -53,27 +53,27 @@ func detectOSAndArchFromBytes(b []byte) (BinaryType, error) {
 
 func parseELF(b []byte) (BinaryType, error) {
 	var binType BinaryType
-	binType.operatingSystem = "linux"
+	binType.OperatingSystem = "linux"
 
 	machine := b[18]
 	switch machine {
 	case 0x03:
-		binType.arch = "x86"
+		binType.Arch = "x86"
 	case 0x3E:
-		binType.arch = "x86_64"
+		binType.Arch = "x86_64"
 	case 0xB7:
-		binType.arch = "arm64"
+		binType.Arch = "arm64"
 	case 0x28:
-		binType.arch = "arm"
+		binType.Arch = "arm"
 	default:
 		return binType, errors.New("unsupported ELF architecture")
 	}
 
 	switch b[4] {
 	case 1:
-		binType.endianess = "little-endien"
+		binType.Endianess = "little-endien"
 	case 2:
-		binType.endianess = "big-endien"
+		binType.Endianess = "big-endien"
 	}
 
 	return binType, nil
@@ -81,7 +81,7 @@ func parseELF(b []byte) (BinaryType, error) {
 
 func parseMachO(b []byte) (BinaryType, error) {
 	var binType BinaryType
-	binType.operatingSystem = "darwin"
+	binType.OperatingSystem = "darwin"
 
 	var magic uint32
 
@@ -96,10 +96,10 @@ func parseMachO(b []byte) (BinaryType, error) {
 	var byteOrder binary.ByteOrder
 	if isLE {
 		byteOrder = binary.LittleEndian
-		binType.endianess = "little-endien"
+		binType.Endianess = "little-endien"
 	} else {
 		byteOrder = binary.BigEndian
-		binType.endianess = "big-endien"
+		binType.Endianess = "big-endien"
 	}
 
 	var cputype int32
@@ -118,13 +118,13 @@ func parseMachO(b []byte) (BinaryType, error) {
 
 	switch cputype {
 	case 7:
-		binType.arch = "x86"
+		binType.Arch = "x86"
 	case 0x01000007, 0x3000000:
-		binType.arch = "x86_64"
+		binType.Arch = "x86_64"
 	case 12:
-		binType.arch = "arm"
+		binType.Arch = "arm"
 	case 0x0100000C, 0x0100000D, 0x0:
-		binType.arch = "arm64"
+		binType.Arch = "arm64"
 	default:
 		return binType, fmt.Errorf("unsupported Mach-O architecture: 0x%x", cputype)
 	}
@@ -134,8 +134,8 @@ func parseMachO(b []byte) (BinaryType, error) {
 
 func parsePE(b []byte) (BinaryType, error) {
 	var binType BinaryType
-	binType.operatingSystem = "windows"
-	binType.endianess = "little-endien"
+	binType.OperatingSystem = "windows"
+	binType.Endianess = "little-endien"
 
 	// PE header offset
 	peOffset := binary.LittleEndian.Uint32(b[0x3C:])
@@ -143,11 +143,11 @@ func parsePE(b []byte) (BinaryType, error) {
 
 	switch machine {
 	case 0x014C:
-		binType.arch = "x86"
+		binType.Arch = "x86"
 	case 0x8664:
-		binType.arch = "x86_64"
+		binType.Arch = "x86_64"
 	case 0xAA64:
-		binType.arch = "arm64"
+		binType.Arch = "arm64"
 	default:
 		return binType, errors.New("unsupported PE architecture")
 	}
@@ -185,7 +185,7 @@ func DownloadFirstNBytes(url string, byteCount int64) ([]byte, error) {
 			return nil, err
 		}
 		return buf, nil
-	} else {
-		return nil, fmt.Errorf("server returned non-OK status, got %d", resp.StatusCode)
 	}
+
+	return nil, fmt.Errorf("server returned non-OK status, got %d", resp.StatusCode)
 }
