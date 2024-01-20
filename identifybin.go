@@ -71,9 +71,9 @@ func parseELF(b []byte) (BinaryType, error) {
 
 	switch b[4] {
 	case 1:
-		binType.Endianess = "little-endien"
+		binType.Endianess = "little-endian"
 	case 2:
-		binType.Endianess = "big-endien"
+		binType.Endianess = "big-endian"
 	}
 
 	return binType, nil
@@ -96,10 +96,10 @@ func parseMachO(b []byte) (BinaryType, error) {
 	var byteOrder binary.ByteOrder
 	if isLE {
 		byteOrder = binary.LittleEndian
-		binType.Endianess = "little-endien"
+		binType.Endianess = "little-endian"
 	} else {
 		byteOrder = binary.BigEndian
-		binType.Endianess = "big-endien"
+		binType.Endianess = "big-endian"
 	}
 
 	var cputype int32
@@ -135,7 +135,7 @@ func parseMachO(b []byte) (BinaryType, error) {
 func parsePE(b []byte) (BinaryType, error) {
 	var binType BinaryType
 	binType.OperatingSystem = "windows"
-	binType.Endianess = "little-endien"
+	binType.Endianess = "little-endian"
 
 	// PE header offset
 	peOffset := binary.LittleEndian.Uint32(b[0x3C:])
