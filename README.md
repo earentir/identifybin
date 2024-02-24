@@ -11,11 +11,7 @@ A small package used to identify the OS and Architecture of a binary from a few 
 import (
 	"fmt"
 
-	"github.com/earentir/gitearelease"
-)
-
-var (
-	appversion = "1.1.14"
+	"github.com/earentir/identifybin"
 )
 
 func checkVersion() {
